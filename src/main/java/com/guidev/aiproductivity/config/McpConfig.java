@@ -11,6 +11,7 @@ public class McpConfig {
 
     @Bean
     public ToolCallback[] taskTools(TaskTool taskTool) {
+
         return MethodToolCallbackProvider
                 .builder()
                 .toolObjects(taskTool)

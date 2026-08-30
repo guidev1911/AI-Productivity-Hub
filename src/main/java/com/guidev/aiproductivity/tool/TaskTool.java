@@ -1,8 +1,8 @@
 package com.guidev.aiproductivity.tool;
 
-import com.guidev.aiproductivity.model.Task;
-import com.guidev.aiproductivity.model.TaskPriority;
-import com.guidev.aiproductivity.repository.TaskRepository;
+import com.guidev.aiproductivity.dto.CreateTaskRequest;
+import com.guidev.aiproductivity.dto.TaskResponse;
+import com.guidev.aiproductivity.service.TaskService;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
@@ -12,50 +12,49 @@ import java.util.List;
 @Component
 public class TaskTool {
 
-    private final TaskRepository taskRepository;
+    private final TaskService taskService;
 
-    public TaskTool(TaskRepository taskRepository) {
-        this.taskRepository = taskRepository;
+    public TaskTool(TaskService taskService) {
+        this.taskService = taskService;
     }
 
-    @Tool(description = "Cria uma nova tarefa")
-    public Task createTask(
-            @ToolParam(description = "Título da tarefa")
-            String title,
+    @Tool(description = "Cria uma nova tarefa no sistema de produtividade")
+    public TaskResponse createTask(
+            @ToolParam(description = "Dados da tarefa que será criada")
+            CreateTaskRequest request) {
 
-            @ToolParam(description = "Descrição da tarefa")
-            String description,
-
-            @ToolParam(description = "Prioridade da tarefa: LOW, MEDIUM ou HIGH")
-            TaskPriority priority) {
-
-        Task task = Task.builder()
-                .title(title)
-                .description(description)
-                .priority(priority)
-                .completed(false)
-                .build();
-
-        return taskRepository.save(task);
+        return taskService.create(request);
     }
 
     @Tool(description = "Lista todas as tarefas cadastradas")
-    public List<Task> listTasks() {
-        return taskRepository.findAll();
+    public List<TaskResponse> listTasks() {
+
+        return taskService.findAll();
     }
 
-    @Tool(description = "Marca uma tarefa como concluída")
-    public Task completeTask(
+    @Tool(description = "Busca uma tarefa pelo seu ID")
+    public TaskResponse getTask(
             @ToolParam(description = "ID da tarefa")
             Long id) {
 
-        Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Tarefa não encontrada: " + id
-                ));
+        return taskService.findById(id);
+    }
 
-        task.setCompleted(true);
+    @Tool(description = "Marca uma tarefa como concluída")
+    public TaskResponse completeTask(
+            @ToolParam(description = "ID da tarefa que será concluída")
+            Long id) {
 
-        return taskRepository.save(task);
+        return taskService.complete(id);
+    }
+
+    @Tool(description = "Remove uma tarefa pelo seu ID")
+    public String deleteTask(
+            @ToolParam(description = "ID da tarefa que será removida")
+            Long id) {
+
+        taskService.delete(id);
+
+        return "Tarefa removida com sucesso.";
     }
 }
