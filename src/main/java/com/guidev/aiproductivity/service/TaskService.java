@@ -1,5 +1,7 @@
 package com.guidev.aiproductivity.service;
 
+import com.guidev.aiproductivity.dto.CreateTaskRequest;
+import com.guidev.aiproductivity.dto.TaskResponse;
 import com.guidev.aiproductivity.model.Task;
 import com.guidev.aiproductivity.repository.TaskRepository;
 import org.springframework.stereotype.Service;
@@ -15,30 +17,74 @@ public class TaskService {
         this.taskRepository = taskRepository;
     }
 
-    public Task create(Task task) {
-        return taskRepository.save(task);
+    public TaskResponse create(CreateTaskRequest request) {
+
+        Task task = Task.builder()
+                .title(request.title())
+                .description(request.description())
+                .priority(request.priority())
+                .dueDate(request.dueDate())
+                .completed(false)
+                .build();
+
+        Task savedTask = taskRepository.save(task);
+
+        return toResponse(savedTask);
     }
 
-    public List<Task> findAll() {
-        return taskRepository.findAll();
+    public List<TaskResponse> findAll() {
+
+        return taskRepository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
-    public Task findById(Long id) {
-        return taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+    public TaskResponse findById(Long id) {
+
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Task not found: " + id)
+                );
+
+        return toResponse(task);
     }
 
-    public Task complete(Long id) {
-        Task task = findById(id);
+    public TaskResponse complete(Long id) {
+
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Task not found: " + id)
+                );
 
         task.setCompleted(true);
 
-        return taskRepository.save(task);
+        Task savedTask = taskRepository.save(task);
+
+        return toResponse(savedTask);
     }
 
     public void delete(Long id) {
-        Task task = findById(id);
+
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Task not found: " + id)
+                );
 
         taskRepository.delete(task);
+    }
+
+    private TaskResponse toResponse(Task task) {
+
+        return new TaskResponse(
+                task.getId(),
+                task.getTitle(),
+                task.getDescription(),
+                task.getPriority(),
+                task.isCompleted(),
+                task.getDueDate(),
+                task.getCreatedAt(),
+                task.getUpdatedAt()
+        );
     }
 }
