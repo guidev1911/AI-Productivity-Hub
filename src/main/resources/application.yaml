@@ -17,6 +17,12 @@ spring:
         format_sql: true
 
   ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        options:
+          model: llama3.1
+
     mcp:
       server:
         protocol: STREAMABLE
