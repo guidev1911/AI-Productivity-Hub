@@ -125,13 +125,22 @@ public class TaskTool {
         return taskService.complete(task.id());
     }
 
-    @Tool(description = "Remove uma tarefa pelo seu ID")
+    @Tool(description = "Remove uma tarefa pelo título. Use o título exato ou o mais próximo possível.")
     public String deleteTask(
-            @ToolParam(description = "ID da tarefa que será removida")
-            Long id) {
+            @ToolParam(description = "Título da tarefa que será removida")
+            String title) {
 
-        taskService.delete(id);
+        List<TaskResponse> tasks = taskService.findAll();
 
-        return "Tarefa removida com sucesso.";
+        TaskResponse task = tasks.stream()
+                .filter(t -> t.title().equalsIgnoreCase(title))
+                .findFirst()
+                .orElseThrow(() ->
+                        new RuntimeException("Tarefa não encontrada: " + title)
+                );
+
+        taskService.delete(task.id());
+
+        return "Tarefa removida com sucesso: " + task.title();
     }
 }
