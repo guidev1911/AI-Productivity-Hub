@@ -147,4 +147,21 @@ public class TaskTool {
 
         return "Tarefa removida com sucesso: " + task.title();
     }
+
+    @Tool(description = "Lista somente as tarefas que ainda não foram concluídas")
+    public List<TaskResponse> listPendingTasks() {
+
+        return taskService.findPending();
+    }
+
+    @Tool(description = "Lista tarefas pendentes filtradas por prioridade")
+    public List<TaskResponse> listPendingTasksByPriority(
+            @ToolParam(description = "Prioridade: LOW, MEDIUM ou HIGH")
+            String priority) {
+
+        return taskService.findPendingByPriority(
+                TaskPriority.valueOf(priority.toUpperCase())
+        );
+    }
+
 }

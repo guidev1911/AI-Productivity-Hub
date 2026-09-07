@@ -3,6 +3,7 @@ package com.guidev.aiproductivity.service;
 import com.guidev.aiproductivity.dto.CreateTaskRequest;
 import com.guidev.aiproductivity.dto.TaskResponse;
 import com.guidev.aiproductivity.model.Task;
+import com.guidev.aiproductivity.model.TaskPriority;
 import com.guidev.aiproductivity.repository.TaskRepository;
 import org.springframework.stereotype.Service;
 
@@ -86,5 +87,21 @@ public class TaskService {
                 task.getCreatedAt(),
                 task.getUpdatedAt()
         );
+    }
+
+    public List<TaskResponse> findPending() {
+
+        return taskRepository.findByCompletedFalse()
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public List<TaskResponse> findPendingByPriority(TaskPriority priority) {
+
+        return taskRepository.findByCompletedFalseAndPriority(priority)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 }
