@@ -2,11 +2,16 @@ package com.guidev.aiproductivity.tool;
 
 import com.guidev.aiproductivity.dto.CreateTaskRequest;
 import com.guidev.aiproductivity.dto.TaskResponse;
+import com.guidev.aiproductivity.model.TaskPriority;
 import com.guidev.aiproductivity.service.TaskService;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Component
@@ -20,10 +25,73 @@ public class TaskTool {
 
     @Tool(description = "Cria uma nova tarefa no sistema de produtividade")
     public TaskResponse createTask(
-            @ToolParam(description = "Dados da tarefa que será criada")
-            CreateTaskRequest request) {
+            @ToolParam(description = "Título da tarefa") String title,
+
+            @ToolParam(description = "Descrição da tarefa") String description,
+
+            @ToolParam(description = "Prioridade: LOW, MEDIUM ou HIGH") String priority,
+
+            @ToolParam(description = """
+                    Data limite da tarefa.
+                    Pode ser uma data no formato yyyy-MM-ddTHH:mm:ss
+                    ou uma expressão como:
+                    hoje às 09:00,
+                    amanhã às 09:00,
+                    depois de amanhã às 14:30.
+                    """)
+            String dueDate) {
+
+        LocalDateTime parsedDueDate = parseDueDate(dueDate);
+
+        CreateTaskRequest request = new CreateTaskRequest(
+                title,
+                description,
+                TaskPriority.valueOf(priority.toUpperCase()),
+                parsedDueDate
+        );
 
         return taskService.create(request);
+    }
+
+    private LocalDateTime parseDueDate(String value) {
+
+        String normalized = value
+                .trim()
+                .toLowerCase();
+
+        LocalDate date;
+
+        if (normalized.contains("depois de amanhã")) {
+            date = LocalDate.now().plusDays(2);
+        } else if (normalized.contains("amanhã")) {
+            date = LocalDate.now().plusDays(1);
+        } else if (normalized.contains("hoje")) {
+            date = LocalDate.now();
+        } else {
+            return LocalDateTime.parse(value);
+        }
+
+        LocalTime time = extractTime(normalized);
+
+        return LocalDateTime.of(date, time);
+    }
+
+    private LocalTime extractTime(String value) {
+
+        String time = value.replaceAll(".*?(\\d{1,2}(?::\\d{2})?).*", "$1");
+
+        if (time.matches("\\d{1,2}:\\d{2}")) {
+            return LocalTime.parse(
+                    time,
+                    DateTimeFormatter.ofPattern("H:mm")
+            );
+        }
+
+        if (time.matches("\\d{1,2}")) {
+            return LocalTime.of(Integer.parseInt(time), 0);
+        }
+
+        return LocalTime.of(9, 0);
     }
 
     @Tool(description = "Lista todas as tarefas cadastradas")
