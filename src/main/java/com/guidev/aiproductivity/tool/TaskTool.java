@@ -164,4 +164,9 @@ public class TaskTool {
         );
     }
 
+    @Tool(description = "Lista tarefas pendentes que já passaram da data e hora de vencimento")
+    public List<TaskResponse> listOverdueTasks() {
+
+        return taskService.findOverdue();
+    }
 }

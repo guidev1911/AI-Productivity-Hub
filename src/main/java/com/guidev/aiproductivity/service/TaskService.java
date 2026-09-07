@@ -7,6 +7,7 @@ import com.guidev.aiproductivity.model.TaskPriority;
 import com.guidev.aiproductivity.repository.TaskRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -100,6 +101,15 @@ public class TaskService {
     public List<TaskResponse> findPendingByPriority(TaskPriority priority) {
 
         return taskRepository.findByCompletedFalseAndPriority(priority)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public List<TaskResponse> findOverdue() {
+
+        return taskRepository
+                .findByCompletedFalseAndDueDateBefore(LocalDateTime.now())
                 .stream()
                 .map(this::toResponse)
                 .toList();
