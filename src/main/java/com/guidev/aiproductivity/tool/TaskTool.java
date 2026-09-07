@@ -55,18 +55,21 @@ public class TaskTool {
 
     private LocalDateTime parseDueDate(String value) {
 
-        String normalized = value
-                .trim()
-                .toLowerCase();
+        String normalized = java.text.Normalizer
+                .normalize(value.trim().toLowerCase(), java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "");
 
         LocalDate date;
 
-        if (normalized.contains("depois de amanhã")) {
+        if (normalized.contains("depois de amanha")) {
             date = LocalDate.now().plusDays(2);
-        } else if (normalized.contains("amanhã")) {
+
+        } else if (normalized.contains("amanha")) {
             date = LocalDate.now().plusDays(1);
+
         } else if (normalized.contains("hoje")) {
             date = LocalDate.now();
+
         } else {
             return LocalDateTime.parse(value);
         }
@@ -75,6 +78,7 @@ public class TaskTool {
 
         return LocalDateTime.of(date, time);
     }
+
 
     private LocalTime extractTime(String value) {
 
