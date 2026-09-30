@@ -52,6 +52,28 @@ public class TaskService {
         return toResponse(task);
     }
 
+    public TaskResponse update(
+            Long id,
+            String title,
+            String description,
+            TaskPriority priority,
+            LocalDateTime dueDate
+    ) {
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Task not found: " + id)
+                );
+
+        task.setTitle(title);
+        task.setDescription(description);
+        task.setPriority(priority);
+        task.setDueDate(dueDate);
+
+        Task savedTask = taskRepository.save(task);
+
+        return toResponse(savedTask);
+    }
+
     public TaskResponse complete(Long id) {
 
         Task task = taskRepository.findById(id)

@@ -169,4 +169,44 @@ public class TaskTool {
 
         return taskService.findOverdue();
     }
+
+    @Tool(description = "Edita uma tarefa existente, permitindo alterar título, descrição, prioridade e data de vencimento")
+    public TaskResponse updateTask(
+            @ToolParam(description = "Título atual da tarefa") String currentTitle,
+
+            @ToolParam(description = "Novo título da tarefa") String title,
+
+            @ToolParam(description = "Nova descrição da tarefa") String description,
+
+            @ToolParam(description = "Nova prioridade: LOW, MEDIUM ou HIGH") String priority,
+
+            @ToolParam(description = """
+                Nova data limite da tarefa.
+                Pode ser uma data no formato yyyy-MM-ddTHH:mm:ss
+                ou uma expressão como:
+                hoje às 09:00,
+                amanhã às 09:00,
+                depois de amanhã às 14:30.
+                """)
+            String dueDate) {
+
+        List<TaskResponse> tasks = taskService.findAll();
+
+        TaskResponse task = tasks.stream()
+                .filter(t -> t.title().equalsIgnoreCase(currentTitle))
+                .findFirst()
+                .orElseThrow(() ->
+                        new RuntimeException("Tarefa não encontrada: " + currentTitle)
+                );
+
+        LocalDateTime parsedDueDate = parseDueDate(dueDate);
+
+        return taskService.update(
+                task.id(),
+                title,
+                description,
+                TaskPriority.valueOf(priority.toUpperCase()),
+                parsedDueDate
+        );
+    }
 }
