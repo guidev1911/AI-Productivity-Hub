@@ -170,24 +170,20 @@ public class TaskTool {
         return taskService.findOverdue();
     }
 
-    @Tool(description = "Edita uma tarefa existente, permitindo alterar título, descrição, prioridade e data de vencimento")
+    @Tool(description = "Edita uma tarefa existente. Altere somente os campos que o usuário solicitar.")
     public TaskResponse updateTask(
             @ToolParam(description = "Título atual da tarefa") String currentTitle,
 
-            @ToolParam(description = "Novo título da tarefa") String title,
+            @ToolParam(description = "Novo título da tarefa. Se não quiser alterar, informe vazio.")
+            String title,
 
-            @ToolParam(description = "Nova descrição da tarefa") String description,
+            @ToolParam(description = "Nova descrição. Se não quiser alterar, informe vazio.")
+            String description,
 
-            @ToolParam(description = "Nova prioridade: LOW, MEDIUM ou HIGH") String priority,
+            @ToolParam(description = "Nova prioridade: LOW, MEDIUM ou HIGH. Se não quiser alterar, informe vazio.")
+            String priority,
 
-            @ToolParam(description = """
-                Nova data limite da tarefa.
-                Pode ser uma data no formato yyyy-MM-ddTHH:mm:ss
-                ou uma expressão como:
-                hoje às 09:00,
-                amanhã às 09:00,
-                depois de amanhã às 14:30.
-                """)
+            @ToolParam(description = "Nova data limite. Se não quiser alterar, informe vazio.")
             String dueDate) {
 
         List<TaskResponse> tasks = taskService.findAll();
@@ -199,13 +195,23 @@ public class TaskTool {
                         new RuntimeException("Tarefa não encontrada: " + currentTitle)
                 );
 
-        LocalDateTime parsedDueDate = parseDueDate(dueDate);
+        TaskPriority parsedPriority = null;
+
+        if (priority != null && !priority.isBlank()) {
+            parsedPriority = TaskPriority.valueOf(priority.toUpperCase());
+        }
+
+        LocalDateTime parsedDueDate = null;
+
+        if (dueDate != null && !dueDate.isBlank()) {
+            parsedDueDate = parseDueDate(dueDate);
+        }
 
         return taskService.update(
                 task.id(),
                 title,
                 description,
-                TaskPriority.valueOf(priority.toUpperCase()),
+                parsedPriority,
                 parsedDueDate
         );
     }

@@ -64,10 +64,21 @@ public class TaskService {
                         new RuntimeException("Task not found: " + id)
                 );
 
-        task.setTitle(title);
-        task.setDescription(description);
-        task.setPriority(priority);
-        task.setDueDate(dueDate);
+        if (title != null && !title.isBlank()) {
+            task.setTitle(title);
+        }
+
+        if (description != null) {
+            task.setDescription(description);
+        }
+
+        if (priority != null) {
+            task.setPriority(priority);
+        }
+
+        if (dueDate != null) {
+            task.setDueDate(dueDate);
+        }
 
         Task savedTask = taskRepository.save(task);
 
