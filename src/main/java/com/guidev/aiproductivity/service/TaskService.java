@@ -7,7 +7,9 @@ import com.guidev.aiproductivity.model.TaskPriority;
 import com.guidev.aiproductivity.repository.TaskRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -143,6 +145,20 @@ public class TaskService {
 
         return taskRepository
                 .findByCompletedFalseAndDueDateBefore(LocalDateTime.now())
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public List<TaskResponse> findDueToday() {
+
+        LocalDate today = LocalDate.now();
+
+        LocalDateTime start = today.atStartOfDay();
+        LocalDateTime end = today.atTime(LocalTime.MAX);
+
+        return taskRepository
+                .findByCompletedFalseAndDueDateBetween(start, end)
                 .stream()
                 .map(this::toResponse)
                 .toList();

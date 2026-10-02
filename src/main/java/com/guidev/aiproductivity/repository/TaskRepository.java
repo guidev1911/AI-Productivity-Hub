@@ -13,4 +13,9 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     List<Task> findByCompletedFalseAndPriority(TaskPriority priority);
 
     List<Task> findByCompletedFalseAndDueDateBefore(LocalDateTime dateTime);
+
+    List<Task> findByCompletedFalseAndDueDateBetween(
+            LocalDateTime start,
+            LocalDateTime end
+    );
 }

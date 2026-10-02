@@ -164,6 +164,11 @@ public class TaskTool {
         );
     }
 
+    @Tool(description = "Lista as tarefas pendentes que vencem hoje")
+    public List<TaskResponse> listTasksDueToday() {
+        return taskService.findDueToday();
+    }
+
     @Tool(description = "Lista tarefas pendentes que já passaram da data e hora de vencimento")
     public List<TaskResponse> listOverdueTasks() {
 
