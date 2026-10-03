@@ -18,4 +18,6 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
             LocalDateTime start,
             LocalDateTime end
     );
+
+    List<Task> findByTitleIgnoreCase(String title);
 }

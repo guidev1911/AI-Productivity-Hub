@@ -175,6 +175,13 @@ public class TaskTool {
         return taskService.findOverdue();
     }
 
+    @Tool(description = "Busca todas as tarefas que possuem determinado título")
+    public List<TaskResponse> findTasksByTitle(
+            @ToolParam(description = "Título da tarefa") String title) {
+
+        return taskService.findByTitle(title);
+    }
+
     @Tool(description = "Edita uma tarefa existente. Altere somente os campos que o usuário solicitar.")
     public TaskResponse updateTask(
             @ToolParam(description = "Título atual da tarefa") String currentTitle,
@@ -191,14 +198,18 @@ public class TaskTool {
             @ToolParam(description = "Nova data limite. Se não quiser alterar, informe vazio.")
             String dueDate) {
 
-        List<TaskResponse> tasks = taskService.findAll();
+        List<TaskResponse> tasks = taskService.findByTitle(currentTitle);
+
+        if (tasks.isEmpty()) {
+            throw new RuntimeException(
+                    "Tarefa não encontrada: " + currentTitle
+            );
+        }
 
         TaskResponse task = tasks.stream()
-                .filter(t -> t.title().equalsIgnoreCase(currentTitle))
+                .filter(t -> !t.completed())
                 .findFirst()
-                .orElseThrow(() ->
-                        new RuntimeException("Tarefa não encontrada: " + currentTitle)
-                );
+                .orElse(tasks.get(0));
 
         TaskPriority parsedPriority = null;
 

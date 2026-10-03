@@ -125,6 +125,13 @@ public class TaskService {
         );
     }
 
+    public List<TaskResponse> findByTitle(String title) {
+        return taskRepository.findByTitleIgnoreCase(title)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
     public List<TaskResponse> findPending() {
 
         return taskRepository.findByCompletedFalse()
