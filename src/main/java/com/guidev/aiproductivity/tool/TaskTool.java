@@ -29,7 +29,13 @@ public class TaskTool {
 
             @ToolParam(description = "Descrição da tarefa") String description,
 
-            @ToolParam(description = "Prioridade: LOW, MEDIUM ou HIGH") String priority,
+            @ToolParam(description = """
+        Prioridade da tarefa.
+        Use LOW para baixa, MEDIUM para média e HIGH para alta.
+        O usuário também pode escrever em português:
+        baixa, média, alta.
+        """)
+            String priority,
 
             @ToolParam(description = """
                     Data limite da tarefa.
@@ -117,13 +123,21 @@ public class TaskTool {
             @ToolParam(description = "Título da tarefa que será concluída")
             String title) {
 
-        List<TaskResponse> tasks = taskService.findAll();
+        List<TaskResponse> tasks = taskService.findByTitle(title);
+
+        if (tasks.isEmpty()) {
+            throw new RuntimeException(
+                    "Tarefa não encontrada: " + title
+            );
+        }
 
         TaskResponse task = tasks.stream()
-                .filter(t -> t.title().equalsIgnoreCase(title))
+                .filter(t -> !t.completed())
                 .findFirst()
                 .orElseThrow(() ->
-                        new RuntimeException("Tarefa não encontrada: " + title)
+                        new RuntimeException(
+                                "Não existe tarefa pendente com o título: " + title
+                        )
                 );
 
         return taskService.complete(task.id());
@@ -134,13 +148,21 @@ public class TaskTool {
             @ToolParam(description = "Título da tarefa que será removida")
             String title) {
 
-        List<TaskResponse> tasks = taskService.findAll();
+        List<TaskResponse> tasks = taskService.findByTitle(title);
+
+        if (tasks.isEmpty()) {
+            throw new RuntimeException(
+                    "Tarefa não encontrada: " + title
+            );
+        }
 
         TaskResponse task = tasks.stream()
-                .filter(t -> t.title().equalsIgnoreCase(title))
+                .filter(t -> !t.completed())
                 .findFirst()
                 .orElseThrow(() ->
-                        new RuntimeException("Tarefa não encontrada: " + title)
+                        new RuntimeException(
+                                "Não existe tarefa pendente com o título: " + title
+                        )
                 );
 
         taskService.delete(task.id());
