@@ -77,9 +77,12 @@ public class TaskTool {
             date = LocalDate.now();
 
         } else {
-            return LocalDateTime.parse(value);
+            throw new IllegalArgumentException(
+                    "Data inválida. Use uma data no formato yyyy-MM-ddTHH:mm:ss " +
+                            "ou expressões como hoje às 09:00, amanhã às 09:00 " +
+                            "ou depois de amanhã às 14:30."
+            );
         }
-
         LocalTime time = extractTime(normalized);
 
         return LocalDateTime.of(date, time);
