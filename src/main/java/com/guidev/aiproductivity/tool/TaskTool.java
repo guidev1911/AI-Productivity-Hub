@@ -52,14 +52,35 @@ public class TaskTool {
         CreateTaskRequest request = new CreateTaskRequest(
                 title,
                 description,
-                TaskPriority.valueOf(priority.toUpperCase()),
+                parsePriority(priority),
                 parsedDueDate
         );
 
         return taskService.create(request);
     }
 
+    private TaskPriority parsePriority(String priority) {
+
+        String normalized = java.text.Normalizer
+                .normalize(priority.trim().toLowerCase(),
+                        java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "");
+
+        return switch (normalized) {
+            case "baixa", "low" -> TaskPriority.LOW;
+            case "media", "medium" -> TaskPriority.MEDIUM;
+            case "alta", "high" -> TaskPriority.HIGH;
+            default -> throw new IllegalArgumentException(
+                    "Prioridade inválida. Use baixa, média ou alta."
+            );
+        };
+    }
+
     private LocalDateTime parseDueDate(String value) {
+
+        if (value == null || value.isBlank()) {
+            return null;
+        }
 
         String normalized = java.text.Normalizer
                 .normalize(value.trim().toLowerCase(), java.text.Normalizer.Form.NFD)
@@ -83,6 +104,7 @@ public class TaskTool {
                             "ou depois de amanhã às 14:30."
             );
         }
+
         LocalTime time = extractTime(normalized);
 
         return LocalDateTime.of(date, time);
@@ -231,10 +253,14 @@ public class TaskTool {
             );
         }
 
-        TaskResponse task = tasks.stream()
-                .filter(t -> !t.completed())
-                .findFirst()
-                .orElse(tasks.get(0));
+        if (tasks.size() > 1) {
+            throw new RuntimeException(
+                    "Existem várias tarefas com o título '" + currentTitle +
+                            "'. É necessário identificar a tarefa correta antes de alterá-la."
+            );
+        }
+
+        TaskResponse task = tasks.get(0);
 
         TaskPriority parsedPriority = null;
 
