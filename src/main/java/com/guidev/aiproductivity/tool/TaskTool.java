@@ -207,7 +207,7 @@ public class TaskTool {
             String priority) {
 
         return taskService.findPendingByPriority(
-                TaskPriority.valueOf(priority.toUpperCase())
+                parsePriority(priority)
         );
     }
 
