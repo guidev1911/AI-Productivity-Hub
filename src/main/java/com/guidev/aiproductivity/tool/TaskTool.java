@@ -265,7 +265,7 @@ public class TaskTool {
         TaskPriority parsedPriority = null;
 
         if (priority != null && !priority.isBlank()) {
-            parsedPriority = TaskPriority.valueOf(priority.toUpperCase());
+            parsedPriority = parsePriority(priority);
         }
 
         LocalDateTime parsedDueDate = null;
