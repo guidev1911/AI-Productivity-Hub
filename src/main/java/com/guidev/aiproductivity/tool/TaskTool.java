@@ -222,41 +222,59 @@ public class TaskTool {
         return taskService.findOverdue();
     }
 
-    @Tool(description = "Busca todas as tarefas que possuem determinado título")
+
+    @Tool(description = """
+        Busca tarefas pelo título.
+        Use esta ferramenta antes de atualizar uma tarefa quando o usuário
+        informar seu título.
+        Retorne os dados completos encontrados, especialmente o ID real.
+        Se nenhuma tarefa for encontrada, retorne a lista vazia.
+        Nunca invente IDs.
+        """)
     public List<TaskResponse> findTasksByTitle(
-            @ToolParam(description = "Título da tarefa") String title) {
+            @ToolParam(description = "Título ou nome da tarefa que deseja localizar")
+            String title) {
 
         return taskService.findByTitle(title);
     }
 
-    @Tool(description = "Edita uma tarefa existente. Altere somente os campos que o usuário solicitar.")
-    public TaskResponse updateTask(
-            @ToolParam(description = "Título atual da tarefa") String currentTitle,
 
-            @ToolParam(description = "Novo título da tarefa. Se não quiser alterar, informe vazio.")
+    @Tool(description = """
+        Atualiza uma tarefa existente pelo título atual.
+        Informe o título da tarefa exatamente como o usuário o forneceu.
+        O sistema localizará a tarefa e usará seu ID internamente.
+        Se houver mais de uma tarefa com esse título, a atualização será recusada.
+        Altere somente os campos solicitados pelo usuário.
+        Para manter um campo sem alterações, informe vazio.
+        """)
+    public TaskResponse updateTask(
+            @ToolParam(description = "Título atual exato da tarefa que será atualizada")
+            String currentTitle,
+
+            @ToolParam(description = "Novo título. Informe vazio para manter o atual.")
             String title,
 
-            @ToolParam(description = "Nova descrição. Se não quiser alterar, informe vazio.")
+            @ToolParam(description = "Nova descrição. Informe vazio para manter a atual.")
             String description,
 
-            @ToolParam(description = "Nova prioridade: LOW, MEDIUM ou HIGH. Se não quiser alterar, informe vazio.")
+            @ToolParam(description = "Nova prioridade: LOW, MEDIUM, HIGH ou baixa, média, alta. Informe vazio para manter a atual.")
             String priority,
 
-            @ToolParam(description = "Nova data limite. Se não quiser alterar, informe vazio.")
+            @ToolParam(description = "Nova data limite, como amanhã às 14:00. Informe vazio para manter a atual.")
             String dueDate) {
 
         List<TaskResponse> tasks = taskService.findByTitle(currentTitle);
 
         if (tasks.isEmpty()) {
-            throw new RuntimeException(
-                    "Tarefa não encontrada: " + currentTitle
+            throw new IllegalArgumentException(
+                    "Nenhuma tarefa encontrada com o título: " + currentTitle
             );
         }
 
         if (tasks.size() > 1) {
-            throw new RuntimeException(
-                    "Existem várias tarefas com o título '" + currentTitle +
-                            "'. É necessário identificar a tarefa correta antes de alterá-la."
+            throw new IllegalArgumentException(
+                    "Existem várias tarefas com o título '" + currentTitle
+                            + "'. Peça ao usuário para identificar a tarefa correta."
             );
         }
 
